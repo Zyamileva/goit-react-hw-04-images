@@ -22,8 +22,8 @@ export class App extends Component {
   componentDidUpdate(_, prevState) {
     const { query, page } = this.state;
     if (query && (prevState.query !== query || prevState.page !== page)) {
-      this.setState({ images: [] });
       this.fetchPosts();
+      console.log('first');
     }
   }
 
@@ -53,11 +53,11 @@ export class App extends Component {
       }
 
       this.setState(imagesOld => ({
-        images:
-          arrImages?.length === 1
-            ? arrImages
-            : [...imagesOld.images, ...arrImages],
+        images: arrImages?.length
+          ? [...imagesOld.images, ...arrImages]
+          : arrImages,
       }));
+      console.log('mas');
     } catch (error) {
       this.setState({ error: error.message });
     } finally {
@@ -68,6 +68,7 @@ export class App extends Component {
   handleSubmit = query => {
     const queryCorrect = query.trim().split(' ').join('+');
     this.setState({ query: queryCorrect, page: 1 });
+    this.setState({ images: [] });
   };
 
   handleClickBtn = () => {
