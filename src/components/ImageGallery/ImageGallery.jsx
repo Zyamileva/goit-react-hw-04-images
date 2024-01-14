@@ -2,8 +2,7 @@ import React from 'react';
 import { Gallery } from './ImageGallery.styled';
 import { ImageItems } from './ImageItems/ImageItems';
 
-export const ImageGallery = ({ images }) => {
-  console.log('ul', { images });
+export const ImageGallery = ({ images, shouModal }) => {
   return (
     <Gallery>
       {images.map(({ id, webformatURL, largeImageURL, tags }) => (
@@ -12,6 +11,7 @@ export const ImageGallery = ({ images }) => {
           smallImageURL={webformatURL}
           largeImageURL={largeImageURL}
           tags={tags}
+          shouModal={shouModal}
         />
       ))}
     </Gallery>

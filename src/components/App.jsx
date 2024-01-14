@@ -1,20 +1,25 @@
-import React from 'react';
+import { Component } from 'react';
 import { Searchbar } from './Searchbar/Searchbar';
 import { searchImages } from '../api/images';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Button } from './Button/Button';
 import { Loader } from './Loader/Loader';
+import { Modal } from './Modal/Modal';
 
-export class App extends React.Component {
+export class App extends Component {
   state = {
     query: '',
     images: [],
     page: 1,
-    // totalHits: 0,
+    perPage: 12,
     isLoading: false,
+    isButtonLoading: false,
+    imageDetailsAlt: '',
+    imageDetailsURL: '',
+    modalOpen: false,
   };
 
-  componentDidUpdate(prevProrps, prevState) {
+  componentDidUpdate(_, prevState) {
     const { query, page } = this.state;
     if (query && (prevState.query !== query || prevState.page !== page)) {
       this.fetchPosts();
@@ -22,11 +27,14 @@ export class App extends React.Component {
   }
 
   async fetchPosts() {
-    const { query, page } = this.state;
+    const { query, page, perPage } = this.state;
     try {
       this.setState({ isLoading: true });
-      // totalHits;
-      const { data: hits } = await searchImages(query, page);
+      const { data: hits, data: totalHits } = await searchImages(
+        query,
+        page,
+        perPage
+      );
 
       const arrImages = hits.hits.map(
         ({ id, webformatURL, largeImageURL, tags }) => ({
@@ -36,13 +44,18 @@ export class App extends React.Component {
           tags,
         })
       );
-
-      console.log('ar', arrImages);
+      const totalPapes = Math.ceil(totalHits.totalHits / perPage);
+      if (totalPapes > page) {
+        this.setState({ isButtonLoading: true });
+      } else {
+        this.setState({ isButtonLoading: false });
+      }
 
       this.setState(imagesOld => ({
-        images: arrImages?.length
-          ? [...imagesOld.images, ...arrImages]
-          : imagesOld,
+        images:
+          arrImages?.length === 1
+            ? arrImages
+            : [...imagesOld.images, ...arrImages],
       }));
     } catch (error) {
       this.setState({ error: error.message });
@@ -52,25 +65,53 @@ export class App extends React.Component {
   }
 
   handleSubmit = query => {
-    this.setState({ query, page: 1 });
+    const queryCorrect = query.trim().split(' ').join('+');
+    this.setState({ query: queryCorrect, page: 1 });
   };
 
   handleClickBtn = () => {
     this.setState(({ page }) => ({ page: page + 1 }));
   };
 
+  shouModal = ({ imageURL, altImage }) => {
+    this.setState({
+      modalOpen: true,
+      imageDetailsURL: imageURL,
+      imageDetailsAlt: altImage,
+    });
+  };
+
+  closeModal = () => {
+    this.setState({
+      modalOpen: false,
+    });
+  };
+
   render() {
-    const { images, isLoading } = this.state;
-    console.log('image render', images);
-    const { handleSubmit, handleClickBtn } = this;
+    const {
+      images,
+      isLoading,
+      isButtonLoading,
+      imageDetailsURL,
+      imageDetailsAlt,
+      modalOpen,
+    } = this.state;
+    const { handleSubmit, handleClickBtn, shouModal, closeModal } = this;
     const isPosts = Boolean(images);
-    console.log(isPosts);
+
     return (
       <>
         <Searchbar onSubmit={handleSubmit} />
         {isLoading && <Loader />}
-        {isPosts && <ImageGallery images={images} />}
-        <Button onClickBtn={handleClickBtn} />
+        {isPosts && <ImageGallery images={images} shouModal={shouModal} />}
+        {isButtonLoading && <Button onClickBtn={handleClickBtn} />}
+        {modalOpen && (
+          <Modal
+            imageDetailsURL={imageDetailsURL}
+            imageDetailsAlt={imageDetailsAlt}
+            close={closeModal}
+          />
+        )}
       </>
     );
   }

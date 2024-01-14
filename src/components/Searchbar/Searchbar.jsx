@@ -5,16 +5,18 @@ import {
   SearchFormInput,
 } from './Searchbar.styled';
 
-import React from 'react';
+import { Component } from 'react';
 
-export class Searchbar extends React.Component {
+export class Searchbar extends Component {
   state = {
     query: '',
     page: 1,
   };
 
   handleSearch = evt => {
-    this.setState({ query: evt.currentTarget.value.toLowerCase() });
+    this.setState({
+      query: evt.currentTarget.value.toLowerCase(),
+    });
   };
 
   handleSubmit = evt => {

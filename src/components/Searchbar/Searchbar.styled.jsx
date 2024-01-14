@@ -40,13 +40,13 @@ export const SearchButton = styled.button`
   box-shadow: var(--main-shadow);
   transition: all 300ms ease-in-out;
   :hover {
-    color: red;
-    background-color: blue;
+    color: black;
+    background-color: gray;
   }
 
   :focus {
-    color: red;
-    background-color: blue;
+    color: black;
+    background-color: gray;
     outline: 3px solid var(--bg);
     box-shadow: 0px 0px 0px 6px var(--accent);
   }
