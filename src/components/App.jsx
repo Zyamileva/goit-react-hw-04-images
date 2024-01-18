@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useEffect, useState } from 'react';
 import { Searchbar } from './Searchbar/Searchbar';
 import { searchImages } from '../api/images';
 import { ImageGallery } from './ImageGallery/ImageGallery';
@@ -6,115 +6,109 @@ import { Button } from './Button/Button';
 import { Loader } from './Loader/Loader';
 import { Modal } from './Modal/Modal';
 
-export class App extends Component {
-  state = {
-    query: '',
-    images: [],
-    page: 1,
-    perPage: 12,
-    isLoading: false,
-    isButtonLoading: false,
-    imageDetailsAlt: '',
-    imageDetailsURL: '',
-    modalOpen: false,
-  };
+import React from 'react';
+// import PropTypes from 'prop-types'
 
-  componentDidUpdate(_, prevState) {
-    const { query, page } = this.state;
-    if (query && (prevState.query !== query || prevState.page !== page)) {
-      this.fetchPosts();
-      console.log('first');
-    }
-  }
+const perPage = 12;
 
-  async fetchPosts() {
-    const { query, page, perPage } = this.state;
-    try {
-      this.setState({ isLoading: true });
-      const { data: hits, data: totalHits } = await searchImages(
-        query,
-        page,
-        perPage
-      );
+export const App = () => {
+  const [query, setQuery] = useState('');
+  const [images, setImages] = useState([]);
+  const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isButtonLoading, setIsButtonLoading] = useState(false);
+  const [imageDetailsAlt, setImageDetailsAlt] = useState('');
+  const [imageDetailsURL, setImageDetailsURL] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [error, setError] = useState('');
 
-      const arrImages = hits.hits.map(
-        ({ id, webformatURL, largeImageURL, tags }) => ({
-          id,
-          webformatURL,
-          largeImageURL,
-          tags,
-        })
-      );
-      const totalPapes = Math.ceil(totalHits.totalHits / perPage);
-      if (totalPapes > page) {
-        this.setState({ isButtonLoading: true });
-      } else {
-        this.setState({ isButtonLoading: false });
+  useEffect(() => {
+    const FetchImages = async () => {
+      try {
+        setIsLoading(true);
+        // const { data: hits, data: totalHits } = await searchImages(
+        //   query,
+        //   page,
+        //   perPage
+        // );
+
+        const {
+          data: { totalHits, hits },
+        } = await searchImages(query, page, perPage);
+        console.log('page', page);
+        console.log('perPage', perPage);
+        const arrImages = hits.map(
+          ({ id, webformatURL, largeImageURL, tags }) => ({
+            id,
+            webformatURL,
+            largeImageURL,
+            tags,
+          })
+        );
+        const totalPapes = Math.ceil(totalHits / perPage);
+        console.log('totalPapes', totalPapes);
+        if (totalPapes > page) {
+          setIsButtonLoading(true);
+        } else {
+          setIsButtonLoading(false);
+        }
+        console.log('arrImages', arrImages);
+        setImages(imagesOld =>
+          page === 1 ? arrImages : [...imagesOld, ...arrImages]
+        );
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setIsLoading(false);
       }
+    };
 
-      this.setState(imagesOld => ({
-        images: arrImages?.length
-          ? [...imagesOld.images, ...arrImages]
-          : arrImages,
-      }));
-      console.log('mas');
-    } catch (error) {
-      this.setState({ error: error.message });
-    } finally {
-      this.setState({ isLoading: false });
+    if (query) {
+      FetchImages();
     }
-  }
+  }, [query, page]);
 
-  handleSubmit = query => {
-    const queryCorrect = query.trim().split(' ').join('+');
-    this.setState({ query: queryCorrect, page: 1 });
-    this.setState({ images: [] });
+  const handleSubmit = q => {
+    const queryCorrect = q.trim().split(' ').join('+');
+    setQuery(queryCorrect);
+    setPage(1);
   };
 
-  handleClickBtn = () => {
-    this.setState(({ page }) => ({ page: page + 1 }));
+  const handleClickBtn = () => {
+    setPage(prevPage => prevPage + 1);
+    console.log(page);
   };
 
-  shouModal = ({ imageURL, altImage }) => {
-    this.setState({
-      modalOpen: true,
-      imageDetailsURL: imageURL,
-      imageDetailsAlt: altImage,
-    });
+  const shouModal = ({ imageURL, altImage }) => {
+    setModalOpen(true);
+    setImageDetailsURL(imageURL);
+    setImageDetailsAlt(altImage);
   };
 
-  closeModal = () => {
-    this.setState({
-      modalOpen: false,
-    });
+  const closeModal = () => {
+    setModalOpen(false);
   };
 
-  render() {
-    const {
-      images,
-      isLoading,
-      isButtonLoading,
-      imageDetailsURL,
-      imageDetailsAlt,
-      modalOpen,
-    } = this.state;
-    const { handleSubmit, handleClickBtn, shouModal, closeModal } = this;
-    const isPosts = Boolean(images);
+  const isPosts = Boolean(images);
 
-    return (
-      <>
-        <Searchbar onSubmit={handleSubmit} />
-        {isLoading && <Loader />}
-        {isPosts && <ImageGallery images={images} shouModal={shouModal} />}
-        {isButtonLoading && <Button onClickBtn={handleClickBtn} />}
-        {modalOpen && (
-          <Modal
-            imageDetailsURL={imageDetailsURL}
-            imageDetailsAlt={imageDetailsAlt}
-            close={closeModal}
-          />
-        )}
-      </>
-    );
-  }
-}
+  return (
+    <>
+      <Searchbar onSubmit={handleSubmit} />
+      {error && <p>{error}</p>}
+      {isLoading && <Loader />}
+      {isPosts && <ImageGallery images={images} shouModal={shouModal} />}
+      {isButtonLoading && <Button onClickBtn={handleClickBtn} />}
+      {modalOpen && (
+        <Modal
+          imageDetailsURL={imageDetailsURL}
+          imageDetailsAlt={imageDetailsAlt}
+          close={closeModal}
+        />
+      )}
+    </>
+  );
+};
+
+App.propTypes = {};
+
+export default App;
