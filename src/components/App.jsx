@@ -26,12 +26,6 @@ export const App = () => {
     const FetchImages = async () => {
       try {
         setIsLoading(true);
-        // const { data: hits, data: totalHits } = await searchImages(
-        //   query,
-        //   page,
-        //   perPage
-        // );
-
         const {
           data: { totalHits, hits },
         } = await searchImages(query, page, perPage);
