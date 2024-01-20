@@ -6,16 +6,16 @@ import PropTypes from 'prop-types';
 const modalRoot = document.getElementById('modal-root');
 
 export const Modal = ({ close, imageDetailsURL, imageDetailsAlt }) => {
-  useEffect(() => {
-    document.addEventListener('keydown', this.closeModal);
-    return () => document.removeEventListener('keydown', this.closeModal);
-  }, []);
-
   const closeModal = ({ target, currentTarget, code }) => {
     if (target === currentTarget || code === 'Escape') {
       close();
     }
   };
+
+  useEffect(() => {
+    document.addEventListener('keydown', closeModal);
+    return () => document.removeEventListener('keydown', closeModal);
+  });
 
   return createPortal(
     <Overlay onClick={closeModal}>

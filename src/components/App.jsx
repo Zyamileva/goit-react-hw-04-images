@@ -5,9 +5,7 @@ import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Button } from './Button/Button';
 import { Loader } from './Loader/Loader';
 import { Modal } from './Modal/Modal';
-
-import React from 'react';
-// import PropTypes from 'prop-types'
+// import React from 'react';
 
 const perPage = 12;
 
@@ -29,8 +27,6 @@ export const App = () => {
         const {
           data: { totalHits, hits },
         } = await searchImages(query, page, perPage);
-        console.log('page', page);
-        console.log('perPage', perPage);
         const arrImages = hits.map(
           ({ id, webformatURL, largeImageURL, tags }) => ({
             id,
@@ -40,13 +36,11 @@ export const App = () => {
           })
         );
         const totalPapes = Math.ceil(totalHits / perPage);
-        console.log('totalPapes', totalPapes);
         if (totalPapes > page) {
           setIsButtonLoading(true);
         } else {
           setIsButtonLoading(false);
         }
-        console.log('arrImages', arrImages);
         setImages(imagesOld =>
           page === 1 ? arrImages : [...imagesOld, ...arrImages]
         );
@@ -70,7 +64,6 @@ export const App = () => {
 
   const handleClickBtn = () => {
     setPage(prevPage => prevPage + 1);
-    console.log(page);
   };
 
   const shouModal = ({ imageURL, altImage }) => {
